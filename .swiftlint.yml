@@ -1,0 +1,8 @@
+disabled_rules:
+  - force_cast
+  - identifier_name
+  - opening_brace
+  - type_name
+
+trailing_comma:
+  mandatory_comma: true
