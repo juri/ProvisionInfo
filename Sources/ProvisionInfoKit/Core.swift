@@ -12,7 +12,7 @@ extension RawProfile {
     }
 }
 
-public struct Profile {
+public struct Profile: Codable {
     public var derEncodedProfile: Data?
     public var developerCertificates: [Data]
     public var entitlements: [String: String]
@@ -70,7 +70,19 @@ extension DeviceID {
     }
 }
 
-public struct Certificate {
+extension DeviceID: Codable {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        try self.init(value: container.decode(String.self))
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.value)
+    }
+}
+
+public struct Certificate: Codable {
     public var fingerprintSHA1: Data?
     public var fingerprintSHA256: Data?
     public var issuer: String?

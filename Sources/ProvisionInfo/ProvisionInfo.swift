@@ -1,17 +1,79 @@
+import ArgumentParser
 import Foundation
 import ProvisionInfoKit
 
 @main
-public enum ProvisionInfo {
-    public static func main() throws {
-        let path = URL(fileURLWithPath: CommandLine.arguments[1], isDirectory: false)
+struct ProvisionInfo: ParsableCommand {
+    @Option(name: .shortAndLong, help: "Output format")
+    var format: Format = .text
+
+    @Argument(help: "Provisioning profile file")
+    var file: String
+
+    public func run() throws {
+        let path = URL(fileURLWithPath: self.file, isDirectory: false)
         let data = try Data(contentsOf: path)
         let rawProfile = try RawProfile(data: data)
         let profile = Profile(raw: rawProfile)
-        let certInfos = try profile.developerCertificates.map(Certificate.init(data:))
+        let certificates = try profile.developerCertificates.map(Certificate.init(data:))
 
-        print(stringify(profile: profile, certificates: certInfos))
+        switch self.format {
+        case .text:
+            print(stringify(profile: profile, certificates: certificates))
+        case .json:
+            let enc = JSONEncoder()
+            enc.dataEncodingStrategy = .base64
+            enc.dateEncodingStrategy = .iso8601
+            enc.keyEncodingStrategy = .convertToSnakeCase
+
+            struct OutputCertificate: Encodable {
+                public var fingerprintSHA1: String?
+                public var fingerprintSHA256: String?
+                public var issuer: String?
+                public var keyID: Data?
+                public var notValidAfter: Date?
+                public var notValidBefore: Date?
+                public var organizationName: String?
+                public var organizationalUnitName: String?
+                public var subjectName: String?
+                public var summary: String
+                public var x509Serial: String?
+            }
+
+            struct OutputWrapper: Encodable {
+                var profile: Profile
+                var certificates: [OutputCertificate]
+            }
+
+            let outputCerts = certificates.map {
+                OutputCertificate(
+                    fingerprintSHA1: $0.fingerprintSHA1.map(hexifyData(_:)),
+                    fingerprintSHA256: $0.fingerprintSHA256.map(hexifyData(_:)),
+                    issuer: $0.issuer,
+                    keyID: $0.keyID,
+                    notValidAfter: $0.notValidAfter,
+                    notValidBefore: $0.notValidBefore,
+                    organizationName: $0.organizationName,
+                    organizationalUnitName: $0.organizationalUnitName,
+                    subjectName: $0.subjectName,
+                    summary: $0.summary,
+                    x509Serial: $0.x509Serial
+                )
+            }
+
+            let outputWrapper = OutputWrapper(profile: profile, certificates: outputCerts)
+            let data = try enc.encode(outputWrapper)
+            guard let str = String(data: data, encoding: .utf8) else {
+                fatalError("Failed to convert output to string")
+            }
+            print(str)
+        }
     }
+}
+
+public enum Format: String, ExpressibleByArgument {
+    case json
+    case text
 }
 
 private func stringify(profile: Profile, certificates: [Certificate]) -> String {
