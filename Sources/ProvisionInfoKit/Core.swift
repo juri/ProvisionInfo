@@ -5,6 +5,13 @@ public struct RawProfile {
     public var fields: [String: Any]
 }
 
+extension RawProfile {
+    public init(data: Data) throws {
+        let decoded = try decodeProfile(data: data)
+        self.init(fields: decoded)
+    }
+}
+
 public struct Profile {
     public var derEncodedProfile: Data?
     public var developerCertificates: [Data]
@@ -18,6 +25,39 @@ public struct Profile {
     public var timeToLive: Int?
     public var uuid: UUID?
     public var version: Int?
+}
+
+extension Profile {
+    public init(raw: RawProfile) {
+        let derEncodedProfile = raw.fields["DER-Encoded-Profile"] as? Data
+        let developerCertificates = raw.fields["DeveloperCertificates"] as? [Data] ?? []
+        let entitlements = raw.fields["Entitlements"] as? [String: String] ?? [:]
+        let expirationDate = raw.fields["ExpirationDate"] as? Date
+        let name = raw.fields["Name"] as? String
+        let platform = raw.fields["Platform"] as? String
+        let provisionedDevices = raw.fields["ProvisionedDevices"] as? [String] ?? []
+        let teamID = raw.fields["TeamIdentifier"] as? [String] ?? []
+        let teamName = raw.fields["TeamName"] as? String
+        let timeToLive = raw.fields["TimeToLive"] as? Int
+        let uuidString = raw.fields["UUID"] as? String
+        let uuid = uuidString.flatMap(UUID.init(uuidString:))
+        let version = raw.fields["Version"] as? Int
+
+        self.init(
+            derEncodedProfile: derEncodedProfile,
+            developerCertificates: developerCertificates,
+            entitlements: entitlements,
+            expirationDate: expirationDate,
+            name: name,
+            platform: platform,
+            provisionedDevices: provisionedDevices.map(DeviceID.init(_:)),
+            teamID: teamID,
+            teamName: teamName,
+            timeToLive: timeToLive,
+            uuid: uuid,
+            version: version
+        )
+    }
 }
 
 public struct DeviceID: Equatable {
@@ -44,40 +84,68 @@ public struct Certificate {
     public var x509Serial: String?
 }
 
-public func rawProfileInfo(data: Data) throws -> RawProfile {
-    let decoded = try decodeProfile(data: data)
-    return RawProfile(fields: decoded)
+extension Certificate {
+    public init(data: Data) throws {
+        guard let cert = SecCertificateCreateWithData(nil, data as CFData) else {
+            throw ProvisionInfoError.certificateReadFailure
+        }
+        guard let summary = SecCertificateCopySubjectSummary(cert).map({ $0 as String }) else {
+            throw ProvisionInfoError.summaryReadFailure
+        }
+        var error: Unmanaged<CFError>?
+
+        let values = SecCertificateCopyValues(cert, nil, &error)
+        guard let dictionary = values as? [CFString: Any] else {
+            throw ProvisionInfoError.certificateCopyDataFailure(nil)
+        }
+
+        let serialDict = dictionary[kSecOIDX509V1SerialNumber] as? [String: Any]
+        let serial = serialDict?["value"] as? String
+
+        let certArrayValue = { topKey, subKey in
+            certificateValueArrayValue(values: dictionary, topKey: topKey, subKey: subKey)
+        }
+
+        let issuerName = certArrayValue(kSecOIDX509V1IssuerName, kSecOIDCommonName) as? String
+
+        let notValidBeforeDict = dictionary[kSecOIDX509V1ValidityNotBefore] as? [String: Any]
+        let notValidBefore = (notValidBeforeDict?["value"] as? TimeInterval).map(Date.init(timeIntervalSinceReferenceDate:))
+
+        let notValidAfterDict = dictionary[kSecOIDX509V1ValidityNotAfter] as? [String: Any]
+        let notValidAfter = (notValidAfterDict?["value"] as? TimeInterval).map(Date.init(timeIntervalSinceReferenceDate:))
+
+        let subjectName = certArrayValue(kSecOIDX509V1SubjectName, kSecOIDCommonName) as? String
+        let organizationName = certArrayValue(kSecOIDX509V1SubjectName, kSecOIDOrganizationName) as? String
+        let organizationalUnitName = certArrayValue(kSecOIDX509V1SubjectName, kSecOIDOrganizationalUnitName) as? String
+
+        let keyID = certArrayValue(kSecOIDAuthorityKeyIdentifier, "Key Identifier" as CFString).flatMap { $0 as? Data }
+
+        let fingerprintSHA256 = certArrayValue("Fingerprints" as CFString, "SHA-256" as CFString).flatMap { $0 as? Data }
+        let fingerprintSHA1 = certArrayValue("Fingerprints" as CFString, "SHA-1" as CFString).flatMap { $0 as? Data }
+
+        self.init(
+            fingerprintSHA1: fingerprintSHA1,
+            fingerprintSHA256: fingerprintSHA256,
+            issuer: issuerName,
+            keyID: keyID,
+            notValidAfter: notValidAfter,
+            notValidBefore: notValidBefore,
+            organizationName: organizationName,
+            organizationalUnitName: organizationalUnitName,
+            subjectName: subjectName,
+            summary: summary,
+            x509Serial: serial
+        )
+    }
 }
 
-public func profile(raw: RawProfile) -> Profile {
-    let derEncodedProfile = raw.fields["DER-Encoded-Profile"] as? Data
-    let developerCertificates = raw.fields["DeveloperCertificates"] as? [Data] ?? []
-    let entitlements = raw.fields["Entitlements"] as? [String: String] ?? [:]
-    let expirationDate = raw.fields["ExpirationDate"] as? Date
-    let name = raw.fields["Name"] as? String
-    let platform = raw.fields["Platform"] as? String
-    let provisionedDevices = raw.fields["ProvisionedDevices"] as? [String] ?? []
-    let teamID = raw.fields["TeamIdentifier"] as? [String] ?? []
-    let teamName = raw.fields["TeamName"] as? String
-    let timeToLive = raw.fields["TimeToLive"] as? Int
-    let uuidString = raw.fields["UUID"] as? String
-    let uuid = uuidString.flatMap(UUID.init(uuidString:))
-    let version = raw.fields["Version"] as? Int
-
-    return Profile(
-        derEncodedProfile: derEncodedProfile,
-        developerCertificates: developerCertificates,
-        entitlements: entitlements,
-        expirationDate: expirationDate,
-        name: name,
-        platform: platform,
-        provisionedDevices: provisionedDevices.map(DeviceID.init(_:)),
-        teamID: teamID,
-        teamName: teamName,
-        timeToLive: timeToLive,
-        uuid: uuid,
-        version: version
-    )
+public func hexifyData(_ data: Data) -> String {
+    data
+        .map {
+            let hex = String($0, radix: 16, uppercase: true)
+            return $0 < 0x10 ? "0\(hex)" : hex
+        }
+        .joined(separator: " ")
 }
 
 private func decodeProfile(data: Data) throws -> [String: Any] {
@@ -115,68 +183,6 @@ private func decodeProfile(data: Data) throws -> [String: Any] {
     }
 
     return dict
-}
-
-public func certInfo(data: Data) throws -> Certificate {
-    guard let cert = SecCertificateCreateWithData(nil, data as CFData) else {
-        throw ProvisionInfoError.certificateReadFailure
-    }
-    guard let summary = SecCertificateCopySubjectSummary(cert).map({ $0 as String }) else {
-        throw ProvisionInfoError.summaryReadFailure
-    }
-    var error: Unmanaged<CFError>?
-
-    let values = SecCertificateCopyValues(cert, nil, &error)
-    guard let dictionary = values as? [CFString: Any] else {
-        throw ProvisionInfoError.certificateCopyDataFailure(nil)
-    }
-
-    let serialDict = dictionary[kSecOIDX509V1SerialNumber] as? [String: Any]
-    let serial = serialDict?["value"] as? String
-
-    let certArrayValue = { topKey, subKey in
-        certificateValueArrayValue(values: dictionary, topKey: topKey, subKey: subKey)
-    }
-
-    let issuerName = certArrayValue(kSecOIDX509V1IssuerName, kSecOIDCommonName) as? String
-
-    let notValidBeforeDict = dictionary[kSecOIDX509V1ValidityNotBefore] as? [String: Any]
-    let notValidBefore = (notValidBeforeDict?["value"] as? TimeInterval).map(Date.init(timeIntervalSinceReferenceDate:))
-
-    let notValidAfterDict = dictionary[kSecOIDX509V1ValidityNotAfter] as? [String: Any]
-    let notValidAfter = (notValidAfterDict?["value"] as? TimeInterval).map(Date.init(timeIntervalSinceReferenceDate:))
-
-    let subjectName = certArrayValue(kSecOIDX509V1SubjectName, kSecOIDCommonName) as? String
-    let organizationName = certArrayValue(kSecOIDX509V1SubjectName, kSecOIDOrganizationName) as? String
-    let organizationalUnitName = certArrayValue(kSecOIDX509V1SubjectName, kSecOIDOrganizationalUnitName) as? String
-
-    let keyID = certArrayValue(kSecOIDAuthorityKeyIdentifier, "Key Identifier" as CFString).flatMap { $0 as? Data }
-
-    let fingerprintSHA256 = certArrayValue("Fingerprints" as CFString, "SHA-256" as CFString).flatMap { $0 as? Data }
-    let fingerprintSHA1 = certArrayValue("Fingerprints" as CFString, "SHA-1" as CFString).flatMap { $0 as? Data }
-
-    return Certificate(
-        fingerprintSHA1: fingerprintSHA1,
-        fingerprintSHA256: fingerprintSHA256,
-        issuer: issuerName,
-        keyID: keyID,
-        notValidAfter: notValidAfter,
-        notValidBefore: notValidBefore,
-        organizationName: organizationName,
-        organizationalUnitName: organizationalUnitName,
-        subjectName: subjectName,
-        summary: summary,
-        x509Serial: serial
-    )
-}
-
-public func hexifyData(_ data: Data) -> String {
-    data
-        .map {
-            let hex = String($0, radix: 16, uppercase: true)
-            return $0 < 0x10 ? "0\(hex)" : hex
-        }
-        .joined(separator: " ")
 }
 
 private func certificateValueArrayValue(values: [CFString: Any], topKey: CFString, subKey: CFString) -> Any? {

@@ -6,9 +6,9 @@ public enum ProvisionInfo {
     public static func main() throws {
         let path = URL(fileURLWithPath: CommandLine.arguments[1], isDirectory: false)
         let data = try Data(contentsOf: path)
-        let rawProfile = try rawProfileInfo(data: data)
-        let profile = profile(raw: rawProfile)
-        let certInfos = try profile.developerCertificates.map(certInfo(data:))
+        let rawProfile = try RawProfile(data: data)
+        let profile = Profile(raw: rawProfile)
+        let certInfos = try profile.developerCertificates.map(Certificate.init(data:))
 
         print(stringify(profile: profile, certificates: certInfos))
     }
