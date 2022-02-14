@@ -13,7 +13,7 @@ let package = Package(
             targets: ["ProvisionInfoKit"]
         ),
         .executable(
-            name: "ProvisionInfo",
+            name: "provision-info",
             targets: ["ProvisionInfo"]
         ),
     ],
