@@ -172,7 +172,10 @@ public func certInfo(data: Data) throws -> Certificate {
 
 public func hexifyData(_ data: Data) -> String {
     data
-        .map { String($0, radix: 16) }
+        .map {
+            let hex = String($0, radix: 16, uppercase: true)
+            return $0 < 0x10 ? "0\(hex)" : hex
+        }
         .joined(separator: " ")
 }
 
