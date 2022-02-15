@@ -6,7 +6,7 @@ public struct Profile: Codable {
     public var entitlements: [String: String]
     public var expirationDate: Date?
     public var name: String?
-    public var platform: String?
+    public var platform: [String]
     public var provisionedDevices: [DeviceID]
     public var teamID: [String]
     public var teamName: String?
@@ -22,7 +22,7 @@ extension Profile {
         let entitlements = raw.fields["Entitlements"] as? [String: String] ?? [:]
         let expirationDate = raw.fields["ExpirationDate"] as? Date
         let name = raw.fields["Name"] as? String
-        let platform = raw.fields["Platform"] as? String
+        let platform = raw.fields["Platform"] as? [String] ?? []
         let provisionedDevices = raw.fields["ProvisionedDevices"] as? [String] ?? []
         let teamID = raw.fields["TeamIdentifier"] as? [String] ?? []
         let teamName = raw.fields["TeamName"] as? String
