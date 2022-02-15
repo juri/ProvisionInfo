@@ -1,6 +1,7 @@
 import Foundation
 
 public struct Profile: Codable {
+    public var creationDate: Date?
     public var derEncodedProfile: Data?
     public var developerCertificates: [Data]
     public var entitlements: [String: String]
@@ -17,6 +18,7 @@ public struct Profile: Codable {
 
 extension Profile {
     public init(raw: RawProfile) {
+        let creationDate = raw.fields["CreationDate"] as? Date
         let derEncodedProfile = raw.fields["DER-Encoded-Profile"] as? Data
         let developerCertificates = raw.fields["DeveloperCertificates"] as? [Data] ?? []
         let entitlements = raw.fields["Entitlements"] as? [String: String] ?? [:]
@@ -32,6 +34,7 @@ extension Profile {
         let version = raw.fields["Version"] as? Int
 
         self.init(
+            creationDate: creationDate,
             derEncodedProfile: derEncodedProfile,
             developerCertificates: developerCertificates,
             entitlements: entitlements,
