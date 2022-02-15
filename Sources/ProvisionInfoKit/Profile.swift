@@ -1,5 +1,6 @@
 import Foundation
 
+/// `Profile` contains fields extracted from a `RawProfile`.
 public struct Profile: Codable {
     public var creationDate: Date?
     public var derEncodedProfile: Data?
@@ -17,6 +18,7 @@ public struct Profile: Codable {
 }
 
 extension Profile {
+    /// Initializes a `Profile` with a `RawProfile`.
     public init(raw: RawProfile) {
         let creationDate = raw.fields["CreationDate"] as? Date
         let derEncodedProfile = raw.fields["DER-Encoded-Profile"] as? Data
@@ -51,6 +53,7 @@ extension Profile {
     }
 }
 
+/// `DeviceID` wraps a device identifier string.
 public struct DeviceID: Equatable {
     public var value: String
 }

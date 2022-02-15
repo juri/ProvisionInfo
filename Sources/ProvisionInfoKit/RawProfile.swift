@@ -1,11 +1,14 @@
 import Foundation
 import Security
 
+/// `RawProfile` represents the fields of a profile as a dictionary. It's the result
+/// of decoding the CMS data and then parsing the property list.
 public struct RawProfile {
     public var fields: [String: Any]
 }
 
 extension RawProfile {
+    /// Initializes a `RawProfile` with data of a provisioning profile file.
     public init(data: Data) throws {
         let decoded = try decodeProfile(data: data)
         self.init(fields: decoded)

@@ -1,6 +1,9 @@
 import Foundation
 import Security
 
+/// `Certificate` represents the information parsed from certificate information
+/// embedded in a provisioning profile in the `DeveloperCertificates` field (available
+/// in ``Profile/developerCertificates``).
 public struct Certificate: Codable {
     public var fingerprintSHA1: Data?
     public var fingerprintSHA256: Data?
@@ -16,6 +19,7 @@ public struct Certificate: Codable {
 }
 
 extension Certificate {
+    /// Initialize a `Certificate` with the data of a `DeveloperCertificates` array entry.
     public init(data: Data) throws {
         guard let cert = SecCertificateCreateWithData(nil, data as CFData) else {
             throw ProvisionInfoError.certificateReadFailure

@@ -1,5 +1,7 @@
 import Foundation
 
+/// `hexifyData` converts a `Data` value to a all-caps hex string with
+/// each byte separated by spaces, e.g. `01 05 A0 FF`.
 public func hexifyData(_ data: Data) -> String {
     data
         .map {
