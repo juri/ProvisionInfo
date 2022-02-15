@@ -37,7 +37,10 @@ let package = Package(
         ),
         .testTarget(
             name: "ProvisionInfoKitTests",
-            dependencies: ["ProvisionInfoKit"]
+            dependencies: ["ProvisionInfoKit"],
+            resources: [
+                .copy("Resources/TestProfile.mobileprovision"),
+            ]
         ),
     ]
 )
