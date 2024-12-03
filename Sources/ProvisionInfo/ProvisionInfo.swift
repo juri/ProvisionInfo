@@ -102,7 +102,6 @@ private func stringify(profile: Profile, certificates: [Certificate]) -> String 
     return output.joined()
 }
 
-
 private func stringify(cert: Certificate) -> String {
     var output = FieldsBuilder(fieldWidth: 26)
 
@@ -124,22 +123,24 @@ private struct FieldsBuilder {
     var fieldWidth = 10
     var output = [String]()
 
-    func padField(_ s: String) -> String { return s.padding(toLength: self.fieldWidth, withPad: " ", startingAt: 0) }
-    mutating func addField(_ f: String) { self.output.append(padField("\(f):")) }
+    func padField(_ s: String) -> String { s.padding(toLength: self.fieldWidth, withPad: " ", startingAt: 0) }
+    mutating func addField(_ f: String) { self.output.append(self.padField("\(f):")) }
     mutating func addValue(_ v: String) {
         self.output.append(v)
         self.output.append("\n")
     }
+
     mutating func add(field: String, value: String) {
-        addField(field)
-        addValue(value)
+        self.addField(field)
+        self.addValue(value)
     }
-    mutating func add(field: String, value: Date) { add(field: field, value: value.formatted(dateFormat)) }
-    mutating func add(field: String, value: Data) { add(field: field, value: hexifyData(value)) }
-    mutating func add(field: String, value: UUID) { add(field: field, value: value.uuidString) }
+
+    mutating func add(field: String, value: Date) { self.add(field: field, value: value.formatted(dateFormat)) }
+    mutating func add(field: String, value: Data) { self.add(field: field, value: hexifyData(value)) }
+    mutating func add(field: String, value: UUID) { self.add(field: field, value: value.uuidString) }
 
     mutating func addHeading(value: String) {
-        output.append("\n==== \(value)\n\n")
+        self.output.append("\n==== \(value)\n\n")
     }
 
     func joined() -> String {

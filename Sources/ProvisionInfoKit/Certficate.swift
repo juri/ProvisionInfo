@@ -44,10 +44,12 @@ extension Certificate {
         let issuerName = certArrayValue(kSecOIDX509V1IssuerName, kSecOIDCommonName) as? String
 
         let notValidBeforeDict = dictionary[kSecOIDX509V1ValidityNotBefore] as? [String: Any]
-        let notValidBefore = (notValidBeforeDict?["value"] as? TimeInterval).map(Date.init(timeIntervalSinceReferenceDate:))
+        let notValidBefore = (notValidBeforeDict?["value"] as? TimeInterval)
+            .map(Date.init(timeIntervalSinceReferenceDate:))
 
         let notValidAfterDict = dictionary[kSecOIDX509V1ValidityNotAfter] as? [String: Any]
-        let notValidAfter = (notValidAfterDict?["value"] as? TimeInterval).map(Date.init(timeIntervalSinceReferenceDate:))
+        let notValidAfter = (notValidAfterDict?["value"] as? TimeInterval)
+            .map(Date.init(timeIntervalSinceReferenceDate:))
 
         let subjectName = certArrayValue(kSecOIDX509V1SubjectName, kSecOIDCommonName) as? String
         let organizationName = certArrayValue(kSecOIDX509V1SubjectName, kSecOIDOrganizationName) as? String
@@ -55,7 +57,8 @@ extension Certificate {
 
         let keyID = certArrayValue(kSecOIDAuthorityKeyIdentifier, "Key Identifier" as CFString).flatMap { $0 as? Data }
 
-        let fingerprintSHA256 = certArrayValue("Fingerprints" as CFString, "SHA-256" as CFString).flatMap { $0 as? Data }
+        let fingerprintSHA256 = certArrayValue("Fingerprints" as CFString, "SHA-256" as CFString)
+            .flatMap { $0 as? Data }
         let fingerprintSHA1 = certArrayValue("Fingerprints" as CFString, "SHA-1" as CFString).flatMap { $0 as? Data }
 
         self.init(

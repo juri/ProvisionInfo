@@ -6,7 +6,7 @@ $MINT run swiftformat --lint --config .swiftformat .
 
 formatstatus=$?
 
-$MINT run swiftlint lint
+$MINT run swiftlint lint Sources Tests
 
 lintstatus=$?
 

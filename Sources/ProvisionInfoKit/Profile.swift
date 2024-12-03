@@ -75,4 +75,3 @@ extension DeviceID: Codable {
         try container.encode(self.value)
     }
 }
-

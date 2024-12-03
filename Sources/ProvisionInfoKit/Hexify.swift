@@ -10,4 +10,3 @@ public func hexifyData(_ data: Data) -> String {
         }
         .joined(separator: " ")
 }
-
