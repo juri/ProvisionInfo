@@ -1,6 +1,6 @@
 import Foundation
 
-public enum EntitlementValue: Equatable {
+public enum EntitlementValue: Equatable, Sendable {
     case array([EntitlementValue])
     case boolean(Bool)
     case data(Data)

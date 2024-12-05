@@ -1,7 +1,7 @@
 import Foundation
 
 /// `Profile` contains fields extracted from a `RawProfile`.
-public struct Profile: Codable {
+public struct Profile: Codable, Sendable {
     public var creationDate: Date?
     public var derEncodedProfile: Data?
     public var developerCertificates: [Data]
@@ -56,7 +56,7 @@ extension Profile {
 }
 
 /// `DeviceID` wraps a device identifier string.
-public struct DeviceID: Equatable {
+public struct DeviceID: Equatable, Sendable {
     public var value: String
 }
 

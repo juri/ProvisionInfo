@@ -71,7 +71,7 @@ struct ProvisionInfo: ParsableCommand {
     }
 }
 
-public enum Format: String, ExpressibleByArgument {
+public enum Format: String, ExpressibleByArgument, Sendable {
     case json
     case text
 }

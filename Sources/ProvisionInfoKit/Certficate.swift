@@ -4,7 +4,7 @@ import Security
 /// `Certificate` represents the information parsed from certificate information
 /// embedded in a provisioning profile in the `DeveloperCertificates` field (available
 /// in ``Profile/developerCertificates``).
-public struct Certificate: Codable {
+public struct Certificate: Codable, Sendable {
     public var fingerprintSHA1: Data?
     public var fingerprintSHA256: Data?
     public var issuer: String?
