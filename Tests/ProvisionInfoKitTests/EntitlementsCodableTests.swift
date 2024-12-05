@@ -30,7 +30,7 @@ struct EntitlementsCodableTests {
             "key8": .string("value1"),
         ]
 
-        var encoder = JSONEncoder()
+        let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted]
         let data = try encoder.encode(entitlements)
 
