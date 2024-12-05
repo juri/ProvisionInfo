@@ -95,10 +95,10 @@ private func stringify(profile: Profile, certificates: [Certificate]) -> String 
         func quoteString(_ string: String) -> String {
             let escaped = String(string.flatMap { character in
                 switch character {
-                case #"\"#: return #"\\"#
-                case #"""#: return #"\\""#
-                case "\n": return #"\\#n"#
-                default: return String(character)
+                case #"\"#: #"\\"#
+                case #"""#: #"\\""#
+                case "\n": #"\\#n"#
+                default: String(character)
                 }
             })
             return #""\#(escaped)""#

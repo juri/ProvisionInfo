@@ -20,7 +20,7 @@ func decodeProfile(data: Data) throws -> [String: Any] {
     var status: OSStatus = errSecSuccess
 
     status = CMSDecoderCreate(&decoder)
-    guard status == errSecSuccess, let decoder = decoder else {
+    guard status == errSecSuccess, let decoder else {
         throw ProvisionInfoError.cmsDecoderCreationFailure(status)
     }
 
@@ -38,7 +38,7 @@ func decodeProfile(data: Data) throws -> [String: Any] {
 
     var decodedCFData: CFData?
     status = CMSDecoderCopyContent(decoder, &decodedCFData)
-    guard status == errSecSuccess, let decodedCFData = decodedCFData else {
+    guard status == errSecSuccess, let decodedCFData else {
         throw ProvisionInfoError.cmsDecoderCopyFailure(status)
     }
 
