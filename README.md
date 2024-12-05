@@ -1,5 +1,7 @@
 # provision-info
 
+![Swift build status](https://github.com/juri/provision-info/actions/workflows/build.yml/badge.svg)
+
 A Swift library and a tool for viewing provisioning profiles.
 
 ## Overview
