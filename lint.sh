@@ -1,15 +1,3 @@
 #!/bin/sh
 
-MINT="/usr/bin/env mint"
-
-$MINT run swiftformat --lint --config .swiftformat .
-
-formatstatus=$?
-
-$MINT run swiftlint lint Sources Tests
-
-lintstatus=$?
-
-if [ $formatstatus -ne 0 ] || [ $lintstatus -ne 0 ]; then
-	exit 1
-fi
+swift package plugin --allow-writing-to-package-directory swiftformat --lint
