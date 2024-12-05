@@ -9,7 +9,7 @@ struct ProvisionInfoTests {
         let data = try Data(contentsOf: location)
         let rawProfile = try RawProfile(data: data)
 
-        let profile = Profile(raw: rawProfile)
+        let profile = try Profile(raw: rawProfile)
         let certs = try profile.developerCertificates.map(Certificate.init(data:))
 
         let validStartComponents = DateComponents(
@@ -28,6 +28,18 @@ struct ProvisionInfoTests {
         #expect(profile.timeToLive == 365)
         #expect(profile.uuid == UUID(uuidString: "73ECBC99-16D4-4685-961A-2051D6BAEF24")!)
         #expect(profile.version == 1)
+
+        #expect(
+            profile.entitlements ==
+                [
+                    "keychain-access-groups": .array([.string("SELFSIGNED.*")]),
+                    "get-task-allow": .boolean(false),
+                    "application-identifier": .string("SELFSIGNED.*"),
+                    "com.apple.developer.associated-domains": .string("*"),
+                    "com.apple.developer.team-identifier": .string("SELFSIGNED"),
+                    "aps-environment": .string("production"),
+                ] as EntitlementsDictionary
+        )
 
         #expect(certs.count == 1)
         let cert = try #require(certs.first)

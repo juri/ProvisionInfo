@@ -5,7 +5,7 @@ public struct Profile: Codable {
     public var creationDate: Date?
     public var derEncodedProfile: Data?
     public var developerCertificates: [Data]
-    public var entitlements: [String: String]
+    public var entitlements: EntitlementsDictionary
     public var expirationDate: Date?
     public var name: String?
     public var platform: [String]
@@ -19,11 +19,11 @@ public struct Profile: Codable {
 
 extension Profile {
     /// Initializes a `Profile` with a `RawProfile`.
-    public init(raw: RawProfile) {
+    public init(raw: RawProfile) throws {
         let creationDate = raw.fields["CreationDate"] as? Date
         let derEncodedProfile = raw.fields["DER-Encoded-Profile"] as? Data
         let developerCertificates = raw.fields["DeveloperCertificates"] as? [Data] ?? []
-        let entitlements = raw.fields["Entitlements"] as? [String: String] ?? [:]
+        let rawEntitlements = raw.fields["Entitlements"] as? [String: Any] ?? [:]
         let expirationDate = raw.fields["ExpirationDate"] as? Date
         let name = raw.fields["Name"] as? String
         let platform = raw.fields["Platform"] as? [String] ?? []
@@ -34,6 +34,8 @@ extension Profile {
         let uuidString = raw.fields["UUID"] as? String
         let uuid = uuidString.flatMap(UUID.init(uuidString:))
         let version = raw.fields["Version"] as? Int
+
+        let entitlements = try EntitlementsDictionary(dict: rawEntitlements)
 
         self.init(
             creationDate: creationDate,

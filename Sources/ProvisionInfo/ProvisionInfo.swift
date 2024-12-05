@@ -14,7 +14,7 @@ struct ProvisionInfo: ParsableCommand {
         let path = URL(fileURLWithPath: self.file, isDirectory: false)
         let data = try Data(contentsOf: path)
         let rawProfile = try RawProfile(data: data)
-        let profile = Profile(raw: rawProfile)
+        let profile = try Profile(raw: rawProfile)
         let certificates = try profile.developerCertificates.map(Certificate.init(data:))
 
         switch self.format {
@@ -87,6 +87,100 @@ private func stringify(profile: Profile, certificates: [Certificate]) -> String 
     if let teamName = profile.teamName { output.add(field: "Team name", value: teamName) }
     if let uuid = profile.uuid { output.add(field: "UUID", value: uuid) }
 
+    if !profile.entitlements.isEmpty {
+        output.addHeading(value: "Entitlements")
+
+        var entitlementsLines = [String]()
+
+        func quoteString(_ string: String) -> String {
+            let escaped = String(string.flatMap { character in
+                switch character {
+                case #"\"#: return #"\\"#
+                case #"""#: return #"\\""#
+                case "\n": return #"\\#n"#
+                default: return String(character)
+                }
+            })
+            return #""\#(escaped)""#
+        }
+
+        func addPlainValue(value: EntitlementValue, level: Int = 0) {
+            let indent = String(repeating: "  ", count: level)
+            switch value {
+            case let .array(array):
+                entitlementsLines.append("\(indent)[Array]:")
+                for entry in array {
+                    addPlainValue(value: entry, level: level + 1)
+                }
+
+            case let .boolean(bool):
+                entitlementsLines.append("\(indent)\(bool)")
+
+            case let .data(data):
+                entitlementsLines.append("\(indent)\(hexifyData(data))")
+
+            case let .double(double):
+                entitlementsLines.append("\(indent)\(double)")
+
+            case let .dictionary(dict):
+                entitlementsLines.append("\(indent)[Dictionary]:")
+                addDictionary(dict, level: level + 1)
+
+            case let .integer(int):
+                entitlementsLines.append("\(indent)\(int)")
+
+            case .null:
+                entitlementsLines.append("\(indent)null")
+
+            case let .string(str):
+                entitlementsLines.append("\(indent)\(quoteString(str))")
+            }
+        }
+
+        func addDictionary(_ dict: EntitlementsDictionary, level: Int = 0) {
+            let indent = String(repeating: "  ", count: level)
+            for (key, value) in dict {
+                let keyLabel = "\(indent)\(key)"
+                switch value {
+                case let .array(array):
+                    entitlementsLines.append("\(keyLabel): [Array]:")
+                    addArray(array, level: level + 1)
+
+                case let .boolean(bool):
+                    entitlementsLines.append("\(keyLabel): \(bool)")
+
+                case let .data(data):
+                    entitlementsLines.append("\(keyLabel): Data(\(hexifyData(data)))")
+
+                case let .double(double):
+                    entitlementsLines.append("\(keyLabel): \(double)")
+
+                case let .dictionary(dict):
+                    entitlementsLines.append(keyLabel)
+                    addDictionary(dict, level: level + 1)
+
+                case let .integer(int):
+                    entitlementsLines.append("\(keyLabel): \(int)")
+
+                case .null:
+                    entitlementsLines.append("\(keyLabel): null")
+
+                case let .string(str):
+                    entitlementsLines.append("\(keyLabel): \(quoteString(str))")
+                }
+            }
+        }
+
+        func addArray(_ array: [EntitlementValue], level: Int = 0) {
+            for value in array {
+                addPlainValue(value: value, level: level + 1)
+            }
+        }
+
+        addDictionary(profile.entitlements)
+        output.addFormatted(text: entitlementsLines.joined(separator: "\n") + "\n")
+    }
+
     if !profile.provisionedDevices.isEmpty {
         output.addHeading(value: "Devices")
         for device in profile.provisionedDevices {
@@ -141,6 +235,10 @@ private struct FieldsBuilder {
 
     mutating func addHeading(value: String) {
         self.output.append("\n==== \(value)\n\n")
+    }
+
+    mutating func addFormatted(text: String) {
+        self.output.append(text)
     }
 
     func joined() -> String {
