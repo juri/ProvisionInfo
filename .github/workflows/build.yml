@@ -1,0 +1,37 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      # setup-swift doesn't support Swift 6 so use the Swift included in macos-latest.
+      # - name: Set up Swift
+      #   uses: swift-actions/setup-swift@v2
+      #   with:
+      #     swift-version: "6.0.0"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s '/Applications/Xcode_16.0.app/Contents/Developer'
+
+      - name: Get swift version
+        run: swift --version # Swift 6.0
+
+      - name: Check Formatting
+        run: swift package plugin --allow-writing-to-package-directory swiftformat --lint
+
+      - name: Build
+        run: swift build
+
+      - name: Run tests
+        run: swift test
