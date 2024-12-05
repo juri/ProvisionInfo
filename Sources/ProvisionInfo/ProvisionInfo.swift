@@ -119,6 +119,9 @@ private func stringify(profile: Profile, certificates: [Certificate]) -> String 
             case let .data(data):
                 entitlementsLines.append("\(indent)\(hexifyData(data))")
 
+            case let .date(date):
+                entitlementsLines.append("\(indent)\(date)")
+
             case let .double(double):
                 entitlementsLines.append("\(indent)\(double)")
 
@@ -151,6 +154,9 @@ private func stringify(profile: Profile, certificates: [Certificate]) -> String 
 
                 case let .data(data):
                     entitlementsLines.append("\(keyLabel): Data(\(hexifyData(data)))")
+
+                case let .date(date):
+                    entitlementsLines.append("\(keyLabel): \(date)")
 
                 case let .double(double):
                     entitlementsLines.append("\(keyLabel): \(double)")
