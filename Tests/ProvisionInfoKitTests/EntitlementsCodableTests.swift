@@ -28,7 +28,7 @@ struct EntitlementsCodableTests {
             "key6": .integer(9),
             "key7": .null,
             "key8": .string("value1"),
-            "key9": .date(Date(timeIntervalSinceReferenceDate: 755112800.0)),
+            "key9": .date(Date(timeIntervalSinceReferenceDate: 755_112_800.0)),
         ]
 
         let encoder = JSONEncoder()
