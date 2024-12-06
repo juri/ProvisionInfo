@@ -13,8 +13,7 @@ struct ProvisionInfo: ParsableCommand {
     public func run() throws {
         let path = URL(filePath: self.file, directoryHint: .notDirectory)
         let data = try Data(contentsOf: path)
-        let rawProfile = try RawProfile(data: data)
-        let profile = try Profile(raw: rawProfile)
+        let profile = try Profile(data: data)
         let certificates = try profile.developerCertificates.map(Certificate.init(data:))
 
         switch self.format {

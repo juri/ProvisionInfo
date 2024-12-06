@@ -18,6 +18,12 @@ public struct Profile: Codable, Sendable {
 }
 
 extension Profile {
+    /// Initialize a `Profile` with a `Data`.
+    public init(data: Data) throws {
+        let raw = try RawProfile(data: data)
+        try self.init(raw: raw)
+    }
+
     /// Initializes a `Profile` with a `RawProfile`.
     public init(raw: RawProfile) throws {
         let creationDate = raw.fields["CreationDate"] as? Date
