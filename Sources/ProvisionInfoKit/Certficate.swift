@@ -1,7 +1,7 @@
 import Foundation
 import Security
 
-/// `Certificate` represents the information parsed from certificate information
+/// `Certificate` represents the information parsed from the certificate information
 /// embedded in a provisioning profile in the `DeveloperCertificates` field (available
 /// in ``Profile/developerCertificates``).
 public struct Certificate: Codable, Sendable {
