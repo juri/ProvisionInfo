@@ -1,5 +1,8 @@
 import Foundation
 
+/// `EntitlementsValue` is a value parsed from the entitlements list of a profile.
+///
+/// `EntitlementsValue` can represent any value found in a property list.
 public enum EntitlementValue: Equatable, Sendable {
     case array([EntitlementValue])
     case boolean(Bool)
@@ -166,6 +169,7 @@ extension EntitlementsDictionary {
     }
 }
 
+/// `EntitlementsDecodingError` is thrown when we encounter an unrecognized value when decoding entitlements.
 struct EntitlementsDecodingError: Error {}
 
 private struct AnyCodingKey: CodingKey {
