@@ -43,7 +43,7 @@ extension EntitlementValue {
             self = .string(str)
 
         default:
-            throw EntitlementsDecodingError()
+            throw ProvisionInfoError.entitlementsDecodingFailure
         }
     }
 
@@ -168,9 +168,6 @@ extension EntitlementsDictionary {
         self = try dict.mapValues { try EntitlementValue(value: $0) }
     }
 }
-
-/// `EntitlementsDecodingError` is thrown when we encounter an unrecognized value when decoding entitlements.
-public struct EntitlementsDecodingError: Error {}
 
 private struct AnyCodingKey: CodingKey {
     public let stringValue: String
