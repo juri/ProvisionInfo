@@ -1,5 +1,9 @@
 # provision-info
 
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fjuri%2Fprovision-info%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/juri/provision-info)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fjuri%2Fprovision-info%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/juri/provision-info)
+![Swift build status](https://github.com/juri/provision-info/actions/workflows/build.yml/badge.svg)
+
 A Swift library and a tool for viewing provisioning profiles.
 
 ## Overview
