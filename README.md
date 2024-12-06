@@ -18,6 +18,12 @@ They use the [Security][security-framework] framework which means they don't wor
 
 [security-framework]: https://developer.apple.com/documentation/Security
 
+## Documentation
+
+The [documentation] is available online at the Swift Package Index.
+
+[documentation]: https://swiftpackageindex.com/juri/provision-info/documentation
+
 ## License
 
 Licensed under the Apache License, Version 2.0. You can find a copy
