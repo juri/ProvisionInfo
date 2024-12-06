@@ -19,13 +19,13 @@ public struct Profile: Codable, Sendable {
 
 extension Profile {
     /// Initialize a `Profile` with a `Data`.
-    public init(data: Data) throws (ProvisionInfoError) {
+    public init(data: Data) throws(ProvisionInfoError) {
         let raw = try RawProfile(data: data)
         try self.init(raw: raw)
     }
 
     /// Initializes a `Profile` with a `RawProfile`.
-    public init(raw: RawProfile) throws (ProvisionInfoError) {
+    public init(raw: RawProfile) throws(ProvisionInfoError) {
         let creationDate = raw.fields["CreationDate"] as? Date
         let derEncodedProfile = raw.fields["DER-Encoded-Profile"] as? Data
         let developerCertificates = raw.fields["DeveloperCertificates"] as? [Data] ?? []

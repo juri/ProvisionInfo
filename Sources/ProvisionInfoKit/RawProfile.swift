@@ -9,13 +9,13 @@ public struct RawProfile {
 
 extension RawProfile {
     /// Initializes a `RawProfile` with data of a provisioning profile file.
-    public init(data: Data) throws (ProvisionInfoError) {
+    public init(data: Data) throws(ProvisionInfoError) {
         let decoded = try decodeProfile(data: data)
         self.init(fields: decoded)
     }
 }
 
-func decodeProfile(data: Data) throws (ProvisionInfoError) -> [String: Any] {
+func decodeProfile(data: Data) throws(ProvisionInfoError) -> [String: Any] {
     var decoder: CMSDecoder?
     var status: OSStatus = errSecSuccess
 

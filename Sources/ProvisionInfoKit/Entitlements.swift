@@ -16,14 +16,14 @@ public enum EntitlementValue: Equatable, Sendable {
 }
 
 extension EntitlementValue {
-    static func make(from value: Any) throws (ProvisionInfoError) -> EntitlementValue {
+    static func make(from value: Any) throws(ProvisionInfoError) -> EntitlementValue {
         fatalError()
     }
 
-    init(value: Any) throws (ProvisionInfoError) {
+    init(value: Any) throws(ProvisionInfoError) {
         switch value {
         case let array as [Any]:
-            let decodedValues = try array.map { entry throws (ProvisionInfoError) in
+            let decodedValues = try array.map { entry throws(ProvisionInfoError) in
                 try EntitlementValue(value: entry)
             }
             self = .array(decodedValues)
@@ -51,7 +51,7 @@ extension EntitlementValue {
         }
     }
 
-    init(dict: [String: Any]) throws (ProvisionInfoError) {
+    init(dict: [String: Any]) throws(ProvisionInfoError) {
         self = try .dictionary(EntitlementsDictionary(dict: dict))
     }
 }
@@ -168,11 +168,11 @@ extension EntitlementValue: Decodable {
 public typealias EntitlementsDictionary = [String: EntitlementValue]
 
 extension EntitlementsDictionary {
-    package init(dict: [String: Any]) throws (ProvisionInfoError) {
-        let mapped = try dict.map { key, value throws (ProvisionInfoError) in
-            return (key, try EntitlementValue(value: value))
+    package init(dict: [String: Any]) throws(ProvisionInfoError) {
+        let mapped = try dict.map { key, value throws(ProvisionInfoError) in
+            return try (key, EntitlementValue(value: value))
         }
-        self = Dictionary.init(uniqueKeysWithValues: mapped)
+        self = Dictionary(uniqueKeysWithValues: mapped)
     }
 }
 
