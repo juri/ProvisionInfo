@@ -9,13 +9,13 @@ public struct RawProfile {
 
 extension RawProfile {
     /// Initializes a `RawProfile` with data of a provisioning profile file.
-    public init(data: Data) throws {
+    public init(data: Data) throws (ProvisionInfoError) {
         let decoded = try decodeProfile(data: data)
         self.init(fields: decoded)
     }
 }
 
-func decodeProfile(data: Data) throws -> [String: Any] {
+func decodeProfile(data: Data) throws (ProvisionInfoError) -> [String: Any] {
     var decoder: CMSDecoder?
     var status: OSStatus = errSecSuccess
 
@@ -43,7 +43,7 @@ func decodeProfile(data: Data) throws -> [String: Any] {
     }
 
     let decodedData = decodedCFData as Data
-    guard let dict = try PropertyListSerialization.propertyList(
+    guard let dict = try? PropertyListSerialization.propertyList(
         from: decodedData, options: [], format: nil
     ) as? [String: Any] else {
         throw ProvisionInfoError.profileDeserializationFailure

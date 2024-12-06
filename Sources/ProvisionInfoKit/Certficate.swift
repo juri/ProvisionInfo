@@ -20,7 +20,7 @@ public struct Certificate: Codable, Sendable {
 
 extension Certificate {
     /// Initialize a `Certificate` with the data of a `DeveloperCertificates` array entry.
-    public init(data: Data) throws {
+    public init(data: Data) throws (ProvisionInfoError) {
         guard let cert = SecCertificateCreateWithData(nil, data as CFData) else {
             throw ProvisionInfoError.certificateReadFailure
         }
