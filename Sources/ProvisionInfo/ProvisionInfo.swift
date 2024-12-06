@@ -11,7 +11,7 @@ struct ProvisionInfo: ParsableCommand {
     var file: String
 
     public func run() throws {
-        let path = URL(fileURLWithPath: self.file, isDirectory: false)
+        let path = URL(filePath: self.file, directoryHint: .notDirectory)
         let data = try Data(contentsOf: path)
         let rawProfile = try RawProfile(data: data)
         let profile = try Profile(raw: rawProfile)
