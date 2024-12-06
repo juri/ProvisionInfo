@@ -54,6 +54,30 @@ extension EntitlementValue {
     init(dict: [String: Any]) throws(ProvisionInfoError) {
         self = try .dictionary(EntitlementsDictionary(dict: dict))
     }
+
+    /// Convert the value into a raw `Any?` type.
+    public var rawValue: Any? {
+        switch self {
+        case let .array(a): a.map(\.rawValue)
+        case let .boolean(b): b
+        case let .data(d): d
+        case let .date(d): d
+        case let .dictionary(d): Self.rawValue(dict: d)
+        case let .double(d): d
+        case let .integer(i): i
+        case .null: nil
+        case let .string(s): s
+        }
+    }
+
+    /// Convert an ``EntitlementsDictionary`` into a raw `[String: Any?]` type.
+    public static func rawValue(dict: EntitlementsDictionary) -> [String: Any?] {
+        var outputDict = [String: Any]()
+        for (key, value) in dict {
+            outputDict[key] = value.rawValue
+        }
+        return outputDict
+    }
 }
 
 extension EntitlementValue: Encodable {
